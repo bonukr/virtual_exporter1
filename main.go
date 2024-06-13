@@ -12,8 +12,8 @@ import (
 )
 
 type t_metrics struct {
-	myapp_start       prometheus.Gauge
-	myapp_running_sec prometheus.Counter
+	myapp_start      prometheus.Gauge
+	myapp_1sec_count prometheus.Counter
 }
 
 type t_vars struct {
@@ -46,11 +46,13 @@ func main() {
 		})
 		g_mt.myapp_start.Set(1)
 
-		g_mt.myapp_running_sec = promauto.NewCounter(prometheus.CounterOpts{
-			Name: "myapp_running_sec",
-			Help: "프로세스 시작 시간(unix초)",
+		g_mt.myapp_1sec_count = promauto.NewCounter(prometheus.CounterOpts{
+			Name: "myapp_1sec_count",
+			Help: "1초당 1카운트 증가",
 		})
 	}
+
+	go Loop1()
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":9101", nil)
@@ -62,7 +64,7 @@ func Loop1() {
 	for {
 		select {
 		case <-tickerSec.C:
-			g_mt.myapp_running_sec.Add(1)
+			g_mt.myapp_1sec_count.Add(1)
 		}
 	}
 }

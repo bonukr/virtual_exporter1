@@ -14,7 +14,7 @@ COPY . ./
 # RUN git config --global url."https://bwleee:ATBBJFDzSJBUX65zh5EfuVwqXHy50E7DBF9A@bitbucket.org/okestrolab".insteadOf "https://bitbucket.org/okestrolab"
 # RUN go env -w GOPRIVATE=bitbucket.org/okestrolab
 # RUN go get -u bitbucket.org/okestrolab/baton-om-sdk
-RUN GOOS=linux GOARCH=amd64 go build -o VirtualExporter1.exe .
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -v -a
 
 
 # Use the official Alpine image for a lean production container.
@@ -23,11 +23,10 @@ RUN GOOS=linux GOARCH=amd64 go build -o VirtualExporter1.exe .
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates
 
-RUN mkdir -p /baton
-WORKDIR /baton
-
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /build/VirtualExporter1.exe ./
+RUN mkdir -p /app
+COPY --from=builder /build/myapp /app/
 
 # Run the web service_vw on container startup.
-CMD ["/baton/VirtualExporter1.exe"]
+WORKDIR /app
+CMD ["/app/myapp"]
